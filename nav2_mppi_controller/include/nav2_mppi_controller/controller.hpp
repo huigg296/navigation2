@@ -108,7 +108,8 @@ protected:
     */
   void visualize(
     nav_msgs::msg::Path transformed_plan,
-    const builtin_interfaces::msg::Time & cmd_stamp);
+    const builtin_interfaces::msg::Time & cmd_stamp,
+    double z_height);
 
   std::string name_;
   rclcpp_lifecycle::LifecycleNode::WeakPtr parent_;

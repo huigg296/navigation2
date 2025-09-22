@@ -63,7 +63,8 @@ void TrajectoryVisualizer::on_deactivate()
 void TrajectoryVisualizer::add(
   const xt::xtensor<float, 2> & trajectory,
   const std::string & marker_namespace,
-  const builtin_interfaces::msg::Time & cmd_stamp)
+  const builtin_interfaces::msg::Time & cmd_stamp,
+  double z_height)
 {
   auto & size = trajectory.shape()[0];
   if (!size) {
@@ -73,7 +74,7 @@ void TrajectoryVisualizer::add(
   auto add_marker = [&](auto i) {
       float component = static_cast<float>(i) / static_cast<float>(size);
 
-      auto pose = utils::createPose(trajectory(i, 0), trajectory(i, 1), 0.06);
+      auto pose = utils::createPose(trajectory(i, 0), trajectory(i, 1), z_height);
       auto scale =
         i != size - 1 ?
         utils::createScale(0.03, 0.03, 0.07) :
@@ -103,7 +104,7 @@ void TrajectoryVisualizer::add(
 }
 
 void TrajectoryVisualizer::add(
-  const models::Trajectories & trajectories, const std::string & marker_namespace)
+  const models::Trajectories & trajectories, const std::string & marker_namespace, double z_height)
 {
   auto & shape = trajectories.x.shape();
   const float shape_1 = static_cast<float>(shape[1]);
@@ -115,7 +116,7 @@ void TrajectoryVisualizer::add(
       float blue_component = 1.0f - j_flt / shape_1;
       float green_component = j_flt / shape_1;
 
-      auto pose = utils::createPose(trajectories.x(i, j), trajectories.y(i, j), 0.03);
+      auto pose = utils::createPose(trajectories.x(i, j), trajectories.y(i, j), z_height);
       auto scale = utils::createScale(0.03, 0.03, 0.03);
       auto color = utils::createColor(0, green_component, blue_component, 1);
       auto marker = utils::createMarker(

@@ -75,13 +75,13 @@ public:
     */
   void add(
     const xt::xtensor<float, 2> & trajectory, const std::string & marker_namespace,
-    const builtin_interfaces::msg::Time & cmd_stamp);
+    const builtin_interfaces::msg::Time & cmd_stamp, double z_height);
 
   /**
     * @brief Add candidate trajectories to visualize
     * @param trajectories Candidate trajectories
     */
-  void add(const models::Trajectories & trajectories, const std::string & marker_namespace);
+  void add(const models::Trajectories & trajectories, const std::string & marker_namespace, double z_height);
 
   /**
     * @brief Visualize the plan

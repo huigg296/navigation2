@@ -14,6 +14,7 @@
 
 #include <stdint.h>
 #include <chrono>
+#include <tf2/exceptions.h>
 #include "nav2_mppi_controller/controller.hpp"
 #include "nav2_mppi_controller/tools/utils.hpp"
 
@@ -107,7 +108,18 @@ geometry_msgs::msg::TwistStamped MPPIController::computeVelocityCommands(
 #endif
 
   if (visualize_) {
-    visualize(std::move(transformed_plan), cmd.header.stamp);
+    double z_height = 0.06;
+    const std::string base_frame = costmap_ros_->getBaseFrameID();
+    try {
+      auto tfst = tf_buffer_->lookupTransform(
+        costmap_ros_->getGlobalFrameID(), base_frame,  cmd.header.stamp);
+      z_height = tfst.transform.translation.z;
+    } catch (const tf2::TransformException & ex) {
+      RCLCPP_WARN(logger_, "Failed to get transform %s -> %s: %s",
+                  costmap_ros_->getGlobalFrameID().c_str(), base_frame.c_str(), ex.what());
+    }
+
+    visualize(std::move(transformed_plan), cmd.header.stamp, z_height);
   }
 
   return cmd;
@@ -115,10 +127,11 @@ geometry_msgs::msg::TwistStamped MPPIController::computeVelocityCommands(
 
 void MPPIController::visualize(
   nav_msgs::msg::Path transformed_plan,
-  const builtin_interfaces::msg::Time & cmd_stamp)
+  const builtin_interfaces::msg::Time & cmd_stamp,
+  double z_height)
 {
-  trajectory_visualizer_.add(optimizer_.getGeneratedTrajectories(), "Candidate Trajectories");
-  trajectory_visualizer_.add(optimizer_.getOptimizedTrajectory(), "Optimal Trajectory", cmd_stamp);
+  trajectory_visualizer_.add(optimizer_.getGeneratedTrajectories(), "Candidate Trajectories", z_height);
+  trajectory_visualizer_.add(optimizer_.getOptimizedTrajectory(), "Optimal Trajectory", cmd_stamp, z_height);
   trajectory_visualizer_.visualize(std::move(transformed_plan));
 }
 
